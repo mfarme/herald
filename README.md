@@ -1,11 +1,12 @@
-# SafetyBench
+# HERALD
+Harm Evaluation and Risk Assessment for Language Detection
 An in-development Benchmark for Evaluating Crisis Detection and Response in Large Language Models
 
 
 
 ## Overview
 
-SafetyBench is a framework for generating and evaluating conversational safety datasets. It provides two main capabilities:
+HERALD is a framework for generating and evaluating conversational safety datasets. It provides two main capabilities:
 
 1. Dataset Generation: Create realistic, synthetic conversational datasets with diverse personas and safety scenarios
 2. Safety Evaluation: Assess AI models' ability to detect and respond to safety risks in conversations
@@ -269,11 +270,11 @@ python main.py --config custom_config.json generate
 ## File Structure
 
 ```
-SafetyBench/
+herald/
 ├── main.py                  # Main CLI entry point
 ├── config_manager.py        # Centralized configuration management
 ├── dataset_generation.py    # Dataset generation module
-├── safety_bench.py          # Safety evaluation module
+├── herald.py                # Safety evaluation module
 ├── config.json              # Configuration file
 ├── requirements.txt         # Python dependencies
 ├── .env.example             # Environment template
