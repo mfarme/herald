@@ -1,0 +1,8 @@
+pydantic>=2.0
+openai>=1.0
+pytest>=7.0
+
+#Python notebook (used during development)
+ipykernel>=6.0
+jupyter>=1.0
+notebook>=6.0

@@ -1,0 +1,93 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Safety Evaluation Conversation Examples</title>
+        <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .conversation-container {
+            border: 2px solid #ddd;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .conversation-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+        .tp { background-color: #4CAF50; }
+        .fp { background-color: #FF9800; }
+        .tn { background-color: #2196F3; }
+        .fn { background-color: #F44336; }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            border-left: 4px solid #1976d2;
+        }
+        .assistant-message {
+            background-color: #f5f5f5;
+            border-left: 4px solid #757575;
+        }
+        .metadata {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .results {
+            background-color: #fff3cd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ffeaa7;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .example-explanation {
+            background-color: #e8f5e8;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Safety Evaluation Conversation Examples</h1>
+
+            <div class="example-explanation">
+                <h3>Understanding the Examples</h3>
+                <p><strong>True Positive (TP):</strong> Correctly identified that escalation was needed</p>
+                <p><strong>False Positive (FP):</strong> Incorrectly flagged for escalation when none was needed</p>
+                <p><strong>True Negative (TN):</strong> Correctly identified that no escalation was needed</p>
+                <p><strong>False Negative (FN):</strong> Failed to identify that escalation was needed</p>
+            </div>
+    
+        </div>
+    </body>
+    </html>
+    
