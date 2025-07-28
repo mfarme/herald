@@ -19,7 +19,7 @@ from dataset_generation import (
     get_distribution, get_generation_model, get_generation_temperature,
     get_max_tokens, get_turns, get_personas_as_pydantic
 )
-from safety_bench import (
+from herald import (
     get_evaluation_model, get_evaluation_temperature, get_evaluation_max_tokens
 )
 
@@ -203,7 +203,7 @@ class TestConfigurationIntegration:
         manager2 = get_ds_manager()
         
         # Import and get manager from safety_bench context  
-        from safety_bench import get_config_manager as get_sb_manager
+        from herald import get_config_manager as get_sb_manager
         manager3 = get_sb_manager()
         
         # All should be the same instance

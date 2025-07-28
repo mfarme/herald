@@ -23,7 +23,7 @@ from config_manager import get_config_manager, ConfigError, reload_config
 # Import our modules
 try:
     from dataset_generation import generate_dataset_with_distribution
-    from safety_bench import (
+    from herald import (
         evaluate_safety_dataset, 
         print_evaluation_summary,
         save_evaluation_results
@@ -281,7 +281,7 @@ def handle_evaluate_mode(args):
         
         # Generate HTML visualizations if requested
         if args.save_html:
-            from safety_bench import create_html_confusion_matrix, create_html_conversation_display
+            from herald import create_html_confusion_matrix, create_html_conversation_display
             
             # Generate HTML files
             confusion_html = create_html_confusion_matrix(evaluation_results)
