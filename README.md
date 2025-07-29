@@ -2,6 +2,10 @@
 Harm Evaluation and Risk Assessment for Language Detection
 An in-development Benchmark for Evaluating Crisis Detection and Response in Large Language Models
 
+Current state: Evaluation of OpenAI models on evaluating, labeling, and escalating synthetic conversational data
+Future state: Evaluate multiple models from various providers on a hybrid dataset (not provided in the github) based on expert labelled conversations created from real conversation data.
+
+**NOTE** All of the data presented in this repository is fictional and synthetic. Any resemblance to real individuals, conversations, or events is purely coincidental and unintended. This data should not be interpreted as representing actual persons or real-world incidents; it exists solely for research, development, and evaluation purposes within the context of AI safety. 
 
 
 ## Overview
@@ -10,7 +14,7 @@ HERALD is a framework for generating and evaluating conversational safety datase
 
 1. Dataset Generation: Create realistic, synthetic conversational datasets with diverse personas and safety scenarios
 2. Safety Evaluation: Assess AI models' ability to detect and respond to safety risks in conversations
-3. Configuration Management: Centralized management of all parameters across the system (currently configured for OpenAI models, more to come)
+4. Configuration Management: Centralized management of all parameters across the system (currently configured for OpenAI models, more to come)
 
 # Results for GPT-4.1 
 - based on the dataset generated on 2025-07-28 (n=100 conversations)
