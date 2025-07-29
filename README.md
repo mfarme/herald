@@ -402,29 +402,29 @@ This command shows:
 - English-language conversations only
 - Limited to predefined persona set
 - Requires OpenAI API key and credits
+- Onyl synthetic data
 
 ## Future Plans
 
 - Support for additional model providers (Anthropic, Google, etc.)
+- Hybrid benchmark dataset with expert annotation, blinded from model to prevent data leakage 
 - Multi-language support
-- Expanded persona library
-- Real-time evaluation capabilities
-- Integration with safety monitoring systems
-
+- Expanded persona library for synthetic data
+  
 ## License
 
 MIT License
 
 ## Citation
 
-If you use SafetyBench in your research, please cite:
+If you use HERALD in your research, please cite:
 
 ```bibtex
-@software{Farmer2025SafetyBench,
+@software{Farmer2025HERALD,
   author    = {Matthew S. Farmer},
-  title     = {SafetyBench: A Benchmark for Evaluating Crisis Detection and Response in Large Language Models},
+  title     = {HEARLD: Harm Evaluation and Risk Assessment for Language Detection},
   year      = {2025},
-  url       = {https://github.com/SafetyBench},
+  url       = {https://github.com/herald},
   note      = {Version 0.1}
 }
 ```
