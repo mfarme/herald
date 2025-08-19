@@ -137,12 +137,11 @@ python main.py evaluate --evaluation-model "openai/gpt-4o" --dataset data/safety
 ### Available Models
 
 Popular OpenRouter models include:
-- `openai/gpt-4o` - Latest GPT-4 model
-- `openai/gpt-4o-mini` - Faster, more cost-effective GPT-4
-- `anthropic/claude-3.5-sonnet` - Claude 3.5 Sonnet
-- `anthropic/claude-3-haiku` - Fast and economical Claude model
-- `meta-llama/llama-3-70b-instruct` - Llama 3 70B
-- And many more available through OpenRouter
+- `openai/gpt-5` - Latest GPT-5 model
+- `openai/gpt-5-mini` - Faster, more cost-effective GPT-5
+- `anthropic/claude-sonnet-4` - Anthropic Claude Sonnet 4
+- `google/gemini-2.5-pro` - Google's Gemini 2.5 Pro
+- `deepseek/deepseek-chat-v3-0324` - Deepseek Chat V3
 
 ### Configuration File
 
