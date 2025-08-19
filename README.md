@@ -14,7 +14,7 @@ HERALD is a framework for generating and evaluating conversational safety datase
 
 1. Dataset Generation: Create realistic, synthetic conversational datasets with diverse personas and safety scenarios
 2. Safety Evaluation: Assess AI models' ability to detect and respond to safety risks in conversations
-4. Configuration Management: Centralized management of all parameters across the system (currently configured for OpenAI models, more to come)
+4. Configuration Management: Centralized management of all parameters across the system (supports 200+ models via OpenRouter)
 
 # Results for GPT-4.1 
 - based on the dataset generated on 2025-07-28 (n=100 conversations)
@@ -64,7 +64,7 @@ HERALD is a framework for generating and evaluating conversational safety datase
 ### Prerequisites
 
 - Python 3.8+
-- OpenAI API key
+- OpenRouter API key (provides access to multiple AI models including OpenAI, Anthropic, etc.)
 
 ### Setup
 
@@ -79,15 +79,15 @@ cd SafetyBench
 pip install -r requirements.txt
 ```
 
-3. Set up your OpenAI API key:
+3. Set up your OpenRouter API key:
 ```bash
-export OPENAI_API_KEY="your-api-key-here"
+export OPENROUTER_API_KEY="your-api-key-here"
 ```
 
 Or create a `.env` file:
 ```bash
 cp .env.example .env
-# Edit .env and add your API key
+# Edit .env and add your OpenRouter API key
 ```
 
 ## Quick Start
@@ -113,6 +113,49 @@ View all available options:
 python main.py --help
 python main.py generate --help
 python main.py evaluate --help
+```
+
+## Model Configuration
+
+Herald uses OpenRouter to access multiple AI models. You can configure models in several ways:
+
+### Using CLI Arguments
+
+Override models for specific operations:
+```bash
+# Use a specific model for generation
+python main.py generate --generation-model "anthropic/claude-3.5-sonnet"
+
+# Use a specific model for evaluation  
+python main.py evaluate --evaluation-model "openai/gpt-4o" --dataset data/my_dataset.jsonl
+
+# Use different models for generation and evaluation
+python main.py generate --generation-model "anthropic/claude-3.5-sonnet"
+python main.py evaluate --evaluation-model "openai/gpt-4o" --dataset data/safety_dataset_*.jsonl
+```
+
+### Available Models
+
+Popular OpenRouter models include:
+- `openai/gpt-4o` - Latest GPT-4 model
+- `openai/gpt-4o-mini` - Faster, more cost-effective GPT-4
+- `anthropic/claude-3.5-sonnet` - Claude 3.5 Sonnet
+- `anthropic/claude-3-haiku` - Fast and economical Claude model
+- `meta-llama/llama-3-70b-instruct` - Llama 3 70B
+- And many more available through OpenRouter
+
+### Configuration File
+
+Default models are set in `config.json`:
+```json
+{
+  "dataset_generation": {
+    "generation_model": "openai/gpt-4o-mini"
+  },
+  "safety_evaluation": {
+    "evaluation_model": "openai/gpt-4o"
+  }
+}
 ```
 
 ## Usage Guide
@@ -398,11 +441,11 @@ This command shows:
 
 ## Limitations
 
-- Currently only supports OpenAI models
+- Uses OpenRouter for model access (supports 200+ models including OpenAI, Anthropic, Meta, etc.)
 - English-language conversations only
 - Limited to predefined persona set
-- Requires OpenAI API key and credits
-- Onyl synthetic data
+- Requires OpenRouter API key and credits
+- Only synthetic data
 
 ## Future Plans
 
