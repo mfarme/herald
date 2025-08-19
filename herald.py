@@ -19,8 +19,11 @@ from config_manager import get_config_manager, get_safety_evaluation_config
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Initialize OpenRouter client using OpenAI SDK
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("OPENROUTER_API_KEY")
+)
 
 
 class SafetyAssessment(BaseModel):

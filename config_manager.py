@@ -95,6 +95,8 @@ class ConfigManager:
     _instance: Optional['ConfigManager'] = None
     _config: Optional[SafetyBenchConfig] = None
     _config_file_path: str = "config.json"
+    _generation_model_override: Optional[str] = None
+    _evaluation_model_override: Optional[str] = None
     
     def __new__(cls):
         """Singleton pattern to ensure only one instance exists."""
@@ -308,11 +310,11 @@ class ConfigManager:
     
     def get_generation_model(self) -> str:
         """Get generation model name."""
-        return self.config.dataset_generation.generation_model
+        return self._generation_model_override or self.config.dataset_generation.generation_model
     
     def get_evaluation_model(self) -> str:
         """Get evaluation model name."""
-        return self.config.safety_evaluation.evaluation_model
+        return self._evaluation_model_override or self.config.safety_evaluation.evaluation_model
     
     def get_generation_temperature(self) -> float:
         """Get generation temperature."""
@@ -342,6 +344,19 @@ class ConfigManager:
         """Set the configuration file path and reload."""
         self._config_file_path = path
         self.reload_config()
+    
+    def set_generation_model_override(self, model: Optional[str]) -> None:
+        """Set a temporary override for the generation model."""
+        self._generation_model_override = model
+        
+    def set_evaluation_model_override(self, model: Optional[str]) -> None:
+        """Set a temporary override for the evaluation model."""
+        self._evaluation_model_override = model
+        
+    def clear_model_overrides(self) -> None:
+        """Clear all model overrides."""
+        self._generation_model_override = None
+        self._evaluation_model_override = None
     
     def get_config_summary(self) -> Dict[str, Any]:
         """Get a summary of current configuration for logging/debugging."""

@@ -99,6 +99,11 @@ Examples:
         type=str,
         help='Temporary cache directory (uses config default if not specified)'
     )
+    generate_parser.add_argument(
+        '--generation-model',
+        type=str,
+        help='OpenRouter model to use for generation (e.g., "openai/gpt-4", "anthropic/claude-3.5-sonnet")'
+    )
     
     # Safety Evaluation subparser
     evaluate_parser = subparsers.add_parser(
@@ -120,6 +125,11 @@ Examples:
         '--save-html', 
         action='store_true',
         help='Save HTML visualization of results'
+    )
+    evaluate_parser.add_argument(
+        '--evaluation-model',
+        type=str,
+        help='OpenRouter model to use for evaluation (e.g., "openai/gpt-4", "anthropic/claude-3.5-sonnet")'
     )
     
     # Info subparser
@@ -184,17 +194,22 @@ def handle_generate_mode(args):
     print("SafetyBench Dataset Generation")
     print("=" * 50)
     
-    # Check if OpenAI API key is set
-    if not os.getenv("OPENAI_API_KEY"):
-        print("ERROR: OPENAI_API_KEY environment variable is not set.")
-        print("Please set your OpenAI API key:")
-        print("  export OPENAI_API_KEY='your-api-key-here'")
+    # Check if OpenRouter API key is set
+    if not os.getenv("OPENROUTER_API_KEY"):
+        print("ERROR: OPENROUTER_API_KEY environment variable is not set.")
+        print("Please set your OpenRouter API key:")
+        print("  export OPENROUTER_API_KEY='your-api-key-here'")
         sys.exit(1)
     
     try:
         # Get configuration values
         config_manager = get_config_manager()
         dataset_config = config_manager.get_dataset_generation_config()
+        
+        # Set model override if provided via CLI
+        if hasattr(args, 'generation_model') and args.generation_model:
+            config_manager.set_generation_model_override(args.generation_model)
+            print(f"Using custom generation model: {args.generation_model}")
         
         # Use command line args or config defaults
         num_conversations = args.num_conversations or dataset_config.num_conversations
@@ -213,7 +228,7 @@ def handle_generate_mode(args):
         print(f"  Conversations: {num_conversations}")
         print(f"  Output directory: {output_dir}")
         print(f"  Cache directory: {cache_dir}")
-        print(f"  Generation model: {dataset_config.generation_model}")
+        print(f"  Generation model: {config_manager.get_generation_model()}")
         print(f"  Distribution: {config_manager.get_distribution()}")
         print(f"  Turn options: {config_manager.get_turns()}")
         print()
@@ -243,11 +258,11 @@ def handle_evaluate_mode(args):
     print("SafetyBench Safety Evaluation")
     print("=" * 50)
     
-    # Check if OpenAI API key is set
-    if not os.getenv("OPENAI_API_KEY"):
-        print("ERROR: OPENAI_API_KEY environment variable is not set.")
-        print("Please set your OpenAI API key:")
-        print("  export OPENAI_API_KEY='your-api-key-here'")
+    # Check if OpenRouter API key is set
+    if not os.getenv("OPENROUTER_API_KEY"):
+        print("ERROR: OPENROUTER_API_KEY environment variable is not set.")
+        print("Please set your OpenRouter API key:")
+        print("  export OPENROUTER_API_KEY='your-api-key-here'")
         sys.exit(1)
     
     # Validate dataset file exists
@@ -260,11 +275,16 @@ def handle_evaluate_mode(args):
         config_manager = get_config_manager()
         safety_config = config_manager.get_safety_evaluation_config()
         
+        # Set model override if provided via CLI
+        if hasattr(args, 'evaluation_model') and args.evaluation_model:
+            config_manager.set_evaluation_model_override(args.evaluation_model)
+            print(f"Using custom evaluation model: {args.evaluation_model}")
+        
         print(f"Configuration:")
         print(f"  Dataset file: {args.dataset}")
         print(f"  Output file: {args.output or 'Auto-generated'}")
         print(f"  Save HTML: {args.save_html}")
-        print(f"  Evaluation model: {safety_config.evaluation_model}")
+        print(f"  Evaluation model: {config_manager.get_evaluation_model()}")
         print(f"  Evaluation temperature: {safety_config.evaluation_temperature}")
         print()
         
@@ -322,8 +342,8 @@ def handle_info_mode(args):
         config_manager = get_config_manager()
         
         # Check API key status
-        api_key_status = "✓ Set" if os.getenv("OPENAI_API_KEY") else "✗ Not set"
-        print(f"OpenAI API Key: {api_key_status}")
+        api_key_status = "✓ Set" if os.getenv("OPENROUTER_API_KEY") else "✗ Not set"
+        print(f"OpenRouter API Key: {api_key_status}")
         
         # Show configuration summary
         config_summary = config_manager.get_config_summary()
@@ -357,7 +377,7 @@ def handle_info_mode(args):
     important_files = [
         "config_manager.py",
         "dataset_generation.py",
-        "safety_bench.py", 
+        "herald.py", 
         "main.py",
         "config.json",
         "requirements.txt",
