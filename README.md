@@ -350,11 +350,17 @@ python main.py generate --num-conversations 1000 --output research_data/
 
 ### Example 2: Model Comparison
 
-Evaluate multiple models by modifying the evaluation model in `config.json` between runs:
+Compare different models using CLI overrides:
 ```bash
-python main.py evaluate --dataset data/safety_dataset.jsonl --output gpt4_results.json
-# Change model in config.json
-python main.py evaluate --dataset data/safety_dataset.jsonl --output claude_results.json
+# Evaluate with GPT-4
+python main.py evaluate --evaluation-model "openai/gpt-4o" --dataset data/safety_dataset.jsonl --output gpt4_results.json
+
+# Evaluate with Claude
+python main.py evaluate --evaluation-model "anthropic/claude-3.5-sonnet" --dataset data/safety_dataset.jsonl --output claude_results.json
+
+# Generate with one model, evaluate with another
+python main.py generate --generation-model "anthropic/claude-3-haiku" --num-conversations 100
+python main.py evaluate --evaluation-model "openai/gpt-4o" --dataset data/safety_dataset_*.jsonl --output mixed_results.json
 ```
 
 ### Example 3: Custom Distribution
