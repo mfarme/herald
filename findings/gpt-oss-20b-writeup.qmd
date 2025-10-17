@@ -3,8 +3,6 @@ title: "HERALD: Harm Evaluation and Risk Assessment for Language Detection"
 author:
   - name: "Matthew S. Farmer, PhD RN"
     affiliation: "University of Missouri, Sinclair School of Nursing"
-  - name: "Drew Hebert"
-    affiliation: "University of Missouri, Sinclair School of Nursing"
 format: 
   html:
     toc: true
