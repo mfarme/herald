@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.24">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Matthew S. Farmer, PhD RN">
+<meta name="author" content="Drew Hebert">
+<meta name="dcterms.date" content="2025-10-15">
+<meta name="keywords" content="large language models, suicide prevention, harm detection, mental health, AI safety">
+
+<title>HERALD: Harm Evaluation and Risk Assessment for Language Detection</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="gpt-oss-20b-writeup_files/libs/clipboard/clipboard.min.js"></script>
+<script src="gpt-oss-20b-writeup_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="gpt-oss-20b-writeup_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="gpt-oss-20b-writeup_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="gpt-oss-20b-writeup_files/libs/quarto-html/popper.min.js"></script>
+<script src="gpt-oss-20b-writeup_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="gpt-oss-20b-writeup_files/libs/quarto-html/anchor.min.js"></script>
+<link href="gpt-oss-20b-writeup_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="gpt-oss-20b-writeup_files/libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="gpt-oss-20b-writeup_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="gpt-oss-20b-writeup_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="gpt-oss-20b-writeup_files/libs/bootstrap/bootstrap-9e3ffae467580fdb927a41352e75a2e0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#importance" id="toc-importance" class="nav-link active" data-scroll-target="#importance"><span class="header-section-number">1</span> Importance</a></li>
+  <li><a href="#objective" id="toc-objective" class="nav-link" data-scroll-target="#objective"><span class="header-section-number">2</span> Objective</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods"><span class="header-section-number">3</span> Methods</a>
+  <ul class="collapse">
+  <li><a href="#data-generation" id="toc-data-generation" class="nav-link" data-scroll-target="#data-generation"><span class="header-section-number">3.1</span> Data Generation</a></li>
+  <li><a href="#model-evaluation" id="toc-model-evaluation" class="nav-link" data-scroll-target="#model-evaluation"><span class="header-section-number">3.2</span> Model Evaluation</a></li>
+  </ul></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">4</span> Results</a>
+  <ul class="collapse">
+  <li><a href="#severity-classification" id="toc-severity-classification" class="nav-link" data-scroll-target="#severity-classification"><span class="header-section-number">4.1</span> Severity Classification</a></li>
+  <li><a href="#escalation" id="toc-escalation" class="nav-link" data-scroll-target="#escalation"><span class="header-section-number">4.2</span> Escalation</a></li>
+  </ul></li>
+  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion"><span class="header-section-number">5</span> Discussion</a>
+  <ul class="collapse">
+  <li><a href="#severity-and-breadth-of-harm" id="toc-severity-and-breadth-of-harm" class="nav-link" data-scroll-target="#severity-and-breadth-of-harm"><span class="header-section-number">5.1</span> Severity and Breadth of Harm</a></li>
+  <li><a href="#novelty" id="toc-novelty" class="nav-link" data-scroll-target="#novelty"><span class="header-section-number">5.2</span> Novelty</a></li>
+  <li><a href="#reproducibility" id="toc-reproducibility" class="nav-link" data-scroll-target="#reproducibility"><span class="header-section-number">5.3</span> Reproducibility</a></li>
+  <li><a href="#methodological-insights-and-limitations" id="toc-methodological-insights-and-limitations" class="nav-link" data-scroll-target="#methodological-insights-and-limitations"><span class="header-section-number">5.4</span> Methodological Insights and Limitations</a></li>
+  </ul></li>
+  <li><a href="#future-directions" id="toc-future-directions" class="nav-link" data-scroll-target="#future-directions"><span class="header-section-number">6</span> Future Directions</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">7</span> References</a></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="gpt-oss-20b-writeup.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">HERALD: Harm Evaluation and Risk Assessment for Language Detection</h1>
+</div>
+
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliation</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Matthew S. Farmer, PhD RN </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            University of Missouri, Sinclair School of Nursing
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Drew Hebert </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            University of Missouri, Sinclair School of Nursing
+          </p>
+      </div>
+  </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 15, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+<div>
+  <div class="abstract">
+    <div class="block-title">Abstract</div>
+    <p>This study evaluates gpt-oss-20b’s ability to detect harm-related crisis situations and escalate high-risk conversations in mental health contexts. Using a synthetic dataset of 1,000+ conversations across five risk categories, we assessed the model’s performance across different reasoning effort levels. Results show mixed performance with acceptable recall for high-risk situations (75-79%) but concerning gaps in low-risk detection (23-27% recall). The findings reveal critical safety limitations that require attention before deployment in mental health applications.</p>
+  </div>
+</div>
+
+<div>
+  <div class="keywords">
+    <div class="block-title">Keywords</div>
+    <p>large language models, suicide prevention, harm detection, mental health, AI safety</p>
+  </div>
+</div>
+
+</header>
+
+
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Content Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This document discusses suicide, self-harm, and violent language.</p>
+</div>
+</div>
+<section id="importance" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="importance"><span class="header-section-number">1</span> Importance</h2>
+<p>Deaths by suicide claims the lives of nearly 1 million individuals every year, making it a significant global health concern <span class="citation" data-cites="holmes2025applications atmakuru2025artificial">(<a href="#ref-holmes2025applications" role="doc-biblioref">Holmes et al. 2025</a>; <a href="#ref-atmakuru2025artificial" role="doc-biblioref">Atmakuru et al. 2025</a>)</span>. With a significant shortage and availability of trained mental health professionals to assess and treat individuals in mental health crisis, a growing number of companies are platforming large language model (LLM) chatbots for mental health support. This is in concert with the demand of consumers seeking LLMs for mental health support <span class="citation" data-cites="scholich2025comparison">(<a href="#ref-scholich2025comparison" role="doc-biblioref">Scholich et al. 2025</a>)</span>. The primary purpose of these chatbots is to serve as an adjunct for self-care, emotional wellness, and psychoeducation, not as a replacement for professional therapy <span class="citation" data-cites="stade2024large kang2025can">(<a href="#ref-stade2024large" role="doc-biblioref">Stade et al. 2024</a>; <a href="#ref-kang2025can" role="doc-biblioref">Kang et al. 2025</a>)</span>.</p>
+<p>This raises an important dilemma: what if consumers express credible, high-risk language indicating suicidal or homicidal behaviors to these chatbots? According to <span class="citation" data-cites="scholich2025comparison">Scholich et al. (<a href="#ref-scholich2025comparison" role="doc-biblioref">2025</a>)</span> and others, therapist rate LLMs poorly in assessing risk and providing adequate resources to individuals in crisis <span class="citation" data-cites="izmaylov2023combining">(<a href="#ref-izmaylov2023combining" role="doc-biblioref">Izmaylov et al. 2023</a>)</span>. As demand and usage of LLMs for mental health support increases, the likelihood and significance of this scenario warrants attention. With the emergence of highly capable smaller language models such as gpt-oss-20b and gpt-oss-120b, many companies will likely leverage the improved speed, cost, and capabilities of smaller models for their market. To my knowledge, there is currently no benchmarks to assess suicidal or homicidal detection for large language models <span class="citation" data-cites="li2025can roquefort2025context">(<a href="#ref-li2025can" role="doc-biblioref">Li et al. 2025</a>; <a href="#ref-roquefort2025context" role="doc-biblioref">Roquefort, Ducorroy, and Riad 2025</a>)</span>.</p>
+</section>
+<section id="objective" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="objective"><span class="header-section-number">2</span> Objective</h2>
+<p>To uniformly evaluate and benchmark large language models on their ability to detect harm-related crisis situations and escalate high-risk conversations, I aimed to create a synthetic dataset simulating harm-related conversations and evaluate gpt-oss-20b on its ability to detect high-risk conversations and escalate them accordingly. Due to the ability to select reasoning effort during inference, gpt-oss-20b was evaluated for all levels of reasoning.</p>
+</section>
+<section id="methods" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="methods"><span class="header-section-number">3</span> Methods</h2>
+<section id="data-generation" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="data-generation"><span class="header-section-number">3.1</span> Data Generation</h3>
+<p>The conversation dataset was generated using the OpenAI SDK and OpenRouter API. Pydantic data models were created to define personas, conversation types, and severity level. The model utilized to generate the synthetic conversation was Qwen 3 235b (a22b-2507) with a temperature of 1.0. Seven individual personas were created including name, race, ethnicity, age, language, disability, religion, sex, occupation, interests, background, reaction to support, language style, and user experience (with LLMs). Five conversation types were created including: (1) suicidal; (2) non-suicidal self-harm; (3) harm-to-others; (4) false positive; and (5) benign. The distribution of these conversations types during generation were established a priori at 0.30, 0.25, 0.25, 0.15, and 0.05 respectively. A system prompt was created outlining the generation model’s instructions to role-play as the persona and generate a conversation consistent with their persona and defined conversation type. The full system prompt is available in the attached notebook.</p>
+<p>To ensure the conversation between the persona and the AI assistant represented a realistic scenario, the AI assistant’s turn did not include the system prompt or reveal any details about the persona, conversation type, or severity of the conversation. Each conversation was permitted 3 turns- user, AI assistant, user. Each conversation was stored in JSONL format with the associated labels for model evaluation. A summary of the distribution of conversation types, severity levels, and personas used was saved to provide context for the conversational dataset.</p>
+</section>
+<section id="model-evaluation" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="model-evaluation"><span class="header-section-number">3.2</span> Model Evaluation</h3>
+<p>The model evaluation stage also utilized the OpenAI SDK and OpenRouter API. A Pydantic data class was defined to pass reasoning effort as a parameter to the chat completions function. gpt-oss-20b was set as the evaluation model. A system prompt was defined instructing the model to review the conversation for safety concerns and required the use of tool calling as well as evaluation criteria and escalation triggers. The custom tool “assess_conversation_severity” was defined with three properties: (1) severity level (0-2); (2) reasoning; and (3) escalate (boolean value).</p>
+<p>The evaluation dataset was loaded, separating the labeled metadata from the conversations. Each conversation was given individually to the model with the system prompt and arguments to use the tool defined, tool use as required, and parallel tool calls as permitted. For each evaluation task, the model was test with reasoning effort at minimal, low, medium, and high levels. The outputs of the tools were then formatted into a data frame alongside the ground-truth labels from the original dataset. The function output and ground-truth labels were then compared using classification metrics of accuracy, precision, recall, and F1-score. Results were saved in summary form as a JSON file and details results for each conversation saved as a csv. Each of these are attached to this Kaggle write up submission.</p>
+</section>
+</section>
+<section id="results" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="results"><span class="header-section-number">4</span> Results</h2>
+<section id="severity-classification" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="severity-classification"><span class="header-section-number">4.1</span> Severity Classification</h3>
+<p>The full classification summary is provided in the evaluation summary JSON file attached to this write up. <a href="#tbl-severity" class="quarto-xref">Table&nbsp;1</a> provides a summary of the results for each severity level and each reasoning effort. The evaluation results demonstrated mixed performance in detecting harm-related crisis situations, with varied results by reasoning effort. The model performs best when identifying conversations with no risk conversations, with precision scores between 84-88% across reasoning efforts. Recall is more variable and lower than precision showing that the model will flag benign conversations as higher risk. Interestingly, minimal reasoning effort has the highest f1-score in this category. All reasoning efforts struggle with low-risk identification. Precision varies from 47-53% while recall is extremely low at 23-27%. This is the model’s weakest performance, regardless of reasoning level. The model demonstrates better recall with high-risk conversations at 75-79% yet has some difficulty with precision at 47-50%. The medium reasoning effort performed best in this category. Overall, accuracy remained low across all reasoning level, showing that reasoning effort does not improve performance suggesting the model’s limitations are deeper than reasoning effort alone.</p>
+<div id="tbl-severity" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-severity-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: gpt-oss-20b Severity Classification by Reasoning Effort
+</figcaption>
+<div aria-describedby="tbl-severity-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Risk Level</th>
+<th>Metric</th>
+<th>Minimal</th>
+<th>Low</th>
+<th>Medium</th>
+<th>High</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>No Risk</td>
+<td>Precision</td>
+<td>87.43</td>
+<td>84.75</td>
+<td>84.07</td>
+<td>88.10</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Recall</td>
+<td>78.46</td>
+<td>76.14</td>
+<td>78.46</td>
+<td>73.63</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>F1-score</td>
+<td>82.70</td>
+<td>80.21</td>
+<td>81.17</td>
+<td>80.22</td>
+</tr>
+<tr class="even">
+<td>Low Risk</td>
+<td>Precision</td>
+<td>52.71</td>
+<td>48.00</td>
+<td>51.26</td>
+<td>47.91</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Recall</td>
+<td>26.75</td>
+<td>23.82</td>
+<td>25.44</td>
+<td>25.81</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>F1-score</td>
+<td>35.49</td>
+<td>31.84</td>
+<td>34.00</td>
+<td>33.55</td>
+</tr>
+<tr class="odd">
+<td>High Risk</td>
+<td>Precision</td>
+<td>48.72</td>
+<td>47.46</td>
+<td>49.74</td>
+<td>47.35</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Recall</td>
+<td>77.45</td>
+<td>76.29</td>
+<td>78.80</td>
+<td>75.27</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>F1-score</td>
+<td>59.81</td>
+<td>58.52</td>
+<td>60.99</td>
+<td>58.13</td>
+</tr>
+<tr class="even">
+<td>Overall</td>
+<td>Accuracy</td>
+<td>56.59</td>
+<td>54.40</td>
+<td>56.54</td>
+<td>54.55</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+</section>
+<section id="escalation" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="escalation"><span class="header-section-number">4.2</span> Escalation</h3>
+<p>Matching the classification metrics of high-risk conversations, the capability of the model to escalate a high-risk conversation had a recall of 70-75% across all reasoning levels. Precision shows room for improvement at 45-50% indicating that about half of the conversation escalated are false positives. The model maintains an accuracy for escalation around 60%, indicating less-than-ideal performance in making correct escalation decisions. <a href="#fig-escalation" class="quarto-xref">Figure&nbsp;1</a> provides a visual of the classification metrics for escalation by reasoning effort.</p>
+<div id="fig-escalation" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-escalation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="escalation_metrics.png" class="img-fluid figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-escalation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Classification metrics for escalation by reasoning effort
+</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="discussion" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="discussion"><span class="header-section-number">5</span> Discussion</h2>
+<p>For suicide and violence prevention, gpt-oss-20b’s tendency toward higher recall combined with acceptable precision suggests it follows a cautious and sensitive approach. In crisis intervention contexts, over-escalation is generally preferable to under-escalation. This positive finding is contrasted by the 25-30% of high-risk conversations that aren’t escalated. This presents a critical safety gap that can be addressed with fine-tuning, prompt engineering, and iterative benchmark testing. In the healthcare context, the goal should be to minimize false negatives to zero as quickly and efficiently as possible. Additionally, the moderate precision means mental health support systems would need to handle a substantial volume of false-positive escalations, requiring adequate staffing and protocols to manage the increased workload effectively. The results suggest that while gpt-oss-20b shows promise for escalation decision-making, it would require robust safety nets and human oversight before deployment in real mental health support scenarios.</p>
+<section id="severity-and-breadth-of-harm" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="severity-and-breadth-of-harm"><span class="header-section-number">5.1</span> Severity and Breadth of Harm</h3>
+<p>The findings reveal critical safety gaps that could have life-threatening consequences. The model’s poor recall for low-risk situations (23-27%) is particularly concerning, as these conversations often represent early warning signs or cries for help that require immediate attention. Missing these subtle indicators could allow individuals in crisis to escalate toward self-harm without intervention. While the model demonstrates better recall for high-risk situations (75-79%), the 20-25% of genuinely dangerous conversations that go undetected represent an unacceptable failure rate in life-or-death scenarios <span class="citation" data-cites="stade2024large">(<a href="#ref-stade2024large" role="doc-biblioref">Stade et al. 2024</a>)</span>. The moderate precision across all categories (47-53% for high-risk) also raises concerns about system overload, where legitimate crises might be deprioritized due to false alarms, potentially delaying critical interventions.</p>
+<p>These performance limitations extend beyond individual users to affect entire mental health support ecosystems. Healthcare systems implementing LLM-based screening tools based on these results would face substantial resource strain from false positives while simultaneously missing vulnerable populations who express distress in subtle ways. The poor performance in detecting low-risk situations could disproportionately impact individuals from certain demographic groups who may express crisis differently due to cultural, linguistic, or socioeconomic factors. Furthermore, the consistent performance deficits across all reasoning levels suggest that current LLM architectures may be fundamentally inadequate for nuanced harm detection, affecting the reliability of mental health applications across multiple platforms and providers.</p>
+</section>
+<section id="novelty" class="level3" data-number="5.2">
+<h3 data-number="5.2" class="anchored" data-anchor-id="novelty"><span class="header-section-number">5.2</span> Novelty</h3>
+<p>This study addresses a critical gap in LLM safety evaluation by introducing the first systematic benchmark for harm detection in mental health contexts. The finding that reasoning effort shows minimal impact on performance challenges assumptions about computational scaling in safety-critical applications. The synthetic dataset methodology demonstrates that realistic crisis conversations can be generated at scale for evaluation purposes, opening new avenues for safety research. Most importantly, the results reveal that current LLMs may require fundamentally different approaches to achieve adequate performance in harm detection, rather than simply increasing model size or computational resources.</p>
+</section>
+<section id="reproducibility" class="level3" data-number="5.3">
+<h3 data-number="5.3" class="anchored" data-anchor-id="reproducibility"><span class="header-section-number">5.3</span> Reproducibility</h3>
+<p>The comprehensive methodology, including detailed persona creation, conversation type distributions, and evaluation frameworks, provides a replicable foundation for future research. The use of standardized APIs (OpenAI SDK, OpenRouter) and structured data formats (Pydantic models, JSONL) ensures that other researchers can reproduce and extend this work across different model architectures. The availability of the complete dataset, evaluation code, and system prompts enables validation of these findings and comparison with alternative approaches. However, the reliance on synthetic data generated by Qwen 3 235b introduces potential biases that should be validated against real-world crisis conversation data when ethically feasible.</p>
+</section>
+<section id="methodological-insights-and-limitations" class="level3" data-number="5.4">
+<h3 data-number="5.4" class="anchored" data-anchor-id="methodological-insights-and-limitations"><span class="header-section-number">5.4</span> Methodological Insights and Limitations</h3>
+<p>The synthetic data generation approach, while necessary for ethical reasons, may not fully capture the complexity and unpredictability of genuine crisis communications. The three-turn conversation limit, though practical for evaluation, may not reflect the extended interactions typical in real mental health support scenarios. The tool-calling evaluation framework provides structured assessment but may not capture the nuanced clinical reasoning required for effective harm detection. Future research should explore multi-modal inputs (text, voice, behavioral patterns), longer conversation histories, and integration with established clinical assessment tools. Additionally, the minimal impact of reasoning effort suggests that architectural innovations, rather than computational scaling, may be necessary to achieve clinically acceptable performance in harm detection tasks.</p>
+<p>Seven diverse personas were created; however, the evaluation may not adequately represent the full spectrum of how different cultural, linguistic, and socioeconomic groups express distress and crisis. The synthetic generation process may inadvertently perpetuate biases present in training data, potentially affecting performance for underrepresented populations.</p>
+</section>
+</section>
+<section id="future-directions" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="future-directions"><span class="header-section-number">6</span> Future Directions</h2>
+<ol type="1">
+<li><p>Partnering with mental health organizations to create ethically approved, de-identified crisis datasets will help validate synthetic data results. Long-term studies are needed to assess real-world impacts on patient safety and system effectiveness.</p></li>
+<li><p>Future evaluations should consider voice patterns, typing dynamics, latency, and other behavioral cues used in clinical risk assessment, as well as contextual data from wearables, social media, and health records for improved harm detection.</p></li>
+<li><p>To promote elimination of bias and inequity, fair deployment requires systematic testing across demographics, cultures, and language styles, ensuring harm detection works broadly.</p></li>
+<li><p>Evaluating LLM-based harm detection integration within mental health care is key for implementation.</p></li>
+<li><p>Standardized evaluation protocols, safety benchmarks, and regulatory guidelines are necessary as these systems approach clinical use.</p></li>
+<li><p>Targeted training methods like few-shot learning, reinforcement from clinical feedback, and curriculum learning with complex scenarios may address current limitations in harm detection performance.</p></li>
+</ol>
+</section>
+<section id="references" class="level2" data-number="7">
+<h2 data-number="7" class="anchored" data-anchor-id="references"><span class="header-section-number">7</span> References</h2>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-atmakuru2025artificial" class="csl-entry" role="listitem">
+Atmakuru, A, A Shahini, S Chakraborty, et al. 2025. <span>“Artificial Intelligence-Based Suicide Prevention and Prediction: A Systematic Review (2019–2023).”</span> <em>Information Fusion</em> 114: 102673. <a href="https://doi.org/10.1016/j.inffus.2024.102673">https://doi.org/10.1016/j.inffus.2024.102673</a>.
+</div>
+<div id="ref-holmes2025applications" class="csl-entry" role="listitem">
+Holmes, G, B Tang, S Gupta, S Venkatesh, H Christensen, and A Whitton. 2025. <span>“Applications of Large Language Models in the Field of Suicide Prevention: Scoping Review.”</span> <em>Journal of Medical Internet Research</em> 27: e63126. <a href="https://doi.org/10.2196/63126">https://doi.org/10.2196/63126</a>.
+</div>
+<div id="ref-izmaylov2023combining" class="csl-entry" role="listitem">
+Izmaylov, D, A Segal, K Gal, M Grimland, and Y Levi-Belz. 2023. <span>“Combining Psychological Theory with Language Models for Suicide Risk Detection.”</span> In <em>Findings of the Association for Computational Linguistics: EACL 2023</em>, edited by A Vlachos and I Augenstein, 2430–38. Association for Computational Linguistics. <a href="https://doi.org/10.18653/v1/2023.findings-eacl.184">https://doi.org/10.18653/v1/2023.findings-eacl.184</a>.
+</div>
+<div id="ref-kang2025can" class="csl-entry" role="listitem">
+Kang, D, S Kim, T Kwon, et al. 2025. <span>“Can Large Language Models Be Good Emotional Supporter? Mitigating Preference Bias on Emotional Support Conversation,”</span> May. <a href="https://doi.org/10.48550/arXiv.2402.13211">https://doi.org/10.48550/arXiv.2402.13211</a>.
+</div>
+<div id="ref-li2025can" class="csl-entry" role="listitem">
+Li, T, S Yang, J Wu, et al. 2025. <span>“Can Large Language Models Identify Implicit Suicidal Ideation? An Empirical Evaluation.”</span> <a href="https://doi.org/10.48550/arXiv.2502.17899">https://doi.org/10.48550/arXiv.2502.17899</a>.
+</div>
+<div id="ref-roquefort2025context" class="csl-entry" role="listitem">
+Roquefort, F, A Ducorroy, and R Riad. 2025. <span>“In-Context Learning Capabilities of Large Language Models to Detect Suicide Risk Among Adolescents from Speech Transcripts,”</span> May. <a href="https://doi.org/10.48550/arXiv.2505.20491">https://doi.org/10.48550/arXiv.2505.20491</a>.
+</div>
+<div id="ref-scholich2025comparison" class="csl-entry" role="listitem">
+Scholich, T, M Barr, SW Stirman, and S Raj. 2025. <span>“A Comparison of Responses from Human Therapists and Large Language Model–Based Chatbots to Assess Therapeutic Communication: Mixed Methods Study.”</span> <em>JMIR Mental Health</em> 12 (1): e69709. <a href="https://doi.org/10.2196/69709">https://doi.org/10.2196/69709</a>.
+</div>
+<div id="ref-stade2024large" class="csl-entry" role="listitem">
+Stade, EC, SW Stirman, LH Ungar, et al. 2024. <span>“Large Language Models Could Change the Future of Behavioral Healthcare: A Proposal for Responsible Development and Evaluation.”</span> <em>Npj Mental Health Research</em> 3 (1): 12. <a href="https://doi.org/10.1038/s44184-024-00056-z">https://doi.org/10.1038/s44184-024-00056-z</a>.
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
